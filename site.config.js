@@ -11,8 +11,10 @@ const CONFIG = {
     instagram: "",
   },
   
-  projects: [] as { name: string; href: string }[],
-
+  projects: projects: [
+  { name: '', href: '' },
+].filter(() => false)
+    
   // blog setting (required)
   blog: {
     title: "j1n2u-blog",
