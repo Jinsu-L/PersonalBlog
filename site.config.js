@@ -11,7 +11,7 @@ const CONFIG = {
     instagram: "",
   },
   
-  projects: false,
+  projects: [],
 
   // blog setting (required)
   blog: {
