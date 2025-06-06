@@ -10,13 +10,12 @@ const CONFIG = {
     github: "https://github.com/Jinsu-L",
     instagram: "",
   },
-  projects: [
-  ],
+
   // blog setting (required)
   blog: {
     title: "j1n2u-blog",
     description: "welcome to my-blog!",
-    scheme: "dark", // 'light' | 'dark' | 'system'
+    scheme: "system", // 'light' | 'dark' | 'system'
   },
 
   // CONFIG configration (required)
