@@ -10,6 +10,8 @@ const CONFIG = {
     github: "https://github.com/Jinsu-L",
     instagram: "",
   },
+  
+  projects: "",
 
   // blog setting (required)
   blog: {
