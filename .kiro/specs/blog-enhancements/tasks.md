@@ -56,14 +56,14 @@
     - 기존 스타일링과 일관된 디자인 적용
     - _Requirements: 3.4_
 
-- [ ] 4. Utterances 댓글 시스템 확인 및 개선
-  - [ ] 4.1 기존 Utterances 구현 검토
+- [x] 4. Utterances 댓글 시스템 확인 및 개선
+  - [x] 4.1 기존 Utterances 구현 검토
     - 현재 구현된 Utterances 컴포넌트 동작 확인
     - 환경변수 설정 상태 점검
     - 테마 변경 동작 테스트
     - _Requirements: 1.1, 1.2, 1.3_
 
-  - [ ] 4.2 필요시 Utterances 컴포넌트 개선
+  - [x] 4.2 필요시 Utterances 컴포넌트 개선
     - 환경변수 미설정 시 graceful degradation 확인
     - 다크/라이트 테마 전환 최적화
     - 기존 스타일링과의 일관성 확인

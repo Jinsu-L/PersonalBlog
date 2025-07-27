@@ -14,6 +14,12 @@ const Utterances: React.FC<Props> = ({ issueTerm }) => {
   const commentsRef = useRef<HTMLDivElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
 
+  // Graceful degradation: 리포지토리가 설정되지 않은 경우 렌더링하지 않음
+  const repo = CONFIG.utterances.config.repo
+  if (!repo || repo.trim() === '') {
+    return null
+  }
+
   useEffect(() => {
     const theme = `github-${scheme}`
     const anchor = commentsRef.current
@@ -30,7 +36,7 @@ const Utterances: React.FC<Props> = ({ issueTerm }) => {
       console.warn('Error clearing utterances container:', error)
     }
 
-    // 스크립트 로드
+    // 스크립트 로드 (테마 변경 시 약간의 지연으로 깜빡임 방지)
     const timer = setTimeout(() => {
       try {
         const script = document.createElement("script")
@@ -42,20 +48,27 @@ const Utterances: React.FC<Props> = ({ issueTerm }) => {
 
         const config: Record<string, string> = CONFIG.utterances.config
         Object.keys(config).forEach((key) => {
-          script.setAttribute(key, config[key])
+          // repo는 이미 검증했으므로 안전하게 설정
+          if (key !== 'repo' || config[key]) {
+            script.setAttribute(key, config[key])
+          }
         })
 
-        script.onload = () => setIsLoaded(true)
+        script.onload = () => {
+          setIsLoaded(true)
+        }
+        
         script.onerror = (error) => {
           console.error('Utterances script failed to load:', error)
-          setIsLoaded(false)
+          setIsLoaded(true) // 에러가 발생해도 로딩 상태는 해제
         }
 
         anchor.appendChild(script)
       } catch (error) {
         console.error('Error creating utterances script:', error)
+        setIsLoaded(true) // 에러가 발생해도 로딩 상태는 해제
       }
-    }, 200)
+    }, scheme === 'dark' || scheme === 'light' ? 300 : 200) // 테마 변경 시 약간 더 긴 지연
 
     return () => {
       clearTimeout(timer)
@@ -67,9 +80,9 @@ const Utterances: React.FC<Props> = ({ issueTerm }) => {
     <StyledWrapper>
       <div ref={commentsRef} />
       {!isLoaded && (
-        <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+        <StyledLoadingMessage>
           댓글을 불러오는 중...
-        </div>
+        </StyledLoadingMessage>
       )}
     </StyledWrapper>
   )
@@ -81,4 +94,12 @@ const StyledWrapper = styled.div`
   @media (min-width: 768px) {
     margin-left: -4rem;
   }
+`
+
+const StyledLoadingMessage = styled.div`
+  padding: 20px;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.gray10};
+  font-size: 0.875rem;
+  opacity: 0.7;
 `
