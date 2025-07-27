@@ -50,7 +50,7 @@ export const getPosts = async () => {
         properties.summary,
         response,
         id,
-        lastEditedTime
+        lastEditedTime ? String(lastEditedTime) : undefined
       )
       properties.readingTime = readingTimeResult.minutes
 

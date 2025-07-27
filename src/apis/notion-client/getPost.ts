@@ -41,7 +41,7 @@ export const getPost = async (postId: string): Promise<TPost | null> => {
       properties.summary,
       response,
       postId,
-      lastEditedTime
+      lastEditedTime ? String(lastEditedTime) : undefined
     )
     properties.readingTime = readingTimeResult.minutes
 

@@ -65,7 +65,7 @@ export const getPostBySlug = async (slug: string): Promise<TPost | null> => {
       properties.summary,
       response,
       targetPostId,
-      lastEditedTime
+      lastEditedTime ? String(lastEditedTime) : undefined
     )
     properties.readingTime = readingTimeResult.minutes
 

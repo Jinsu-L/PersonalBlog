@@ -8,7 +8,9 @@ const readingTimeCache = new Map<string, ReadingTimeResult>()
 function manageCacheSize() {
   if (readingTimeCache.size > MAX_CACHE_SIZE) {
     const firstKey = readingTimeCache.keys().next().value
-    readingTimeCache.delete(firstKey)
+    if (firstKey) {
+      readingTimeCache.delete(firstKey)
+    }
   }
 }
 
