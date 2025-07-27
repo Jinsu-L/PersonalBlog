@@ -14,13 +14,13 @@ const Utterances: React.FC<Props> = ({ issueTerm }) => {
   const commentsRef = useRef<HTMLDivElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Graceful degradation: 리포지토리가 설정되지 않은 경우 렌더링하지 않음
+  // Graceful degradation: 리포지토리가 설정되지 않은 경우 체크
   const repo = CONFIG.utterances.config.repo
-  if (!repo || repo.trim() === '') {
-    return null
-  }
+  const shouldRender = repo && repo.trim() !== ''
 
   useEffect(() => {
+    if (!shouldRender) return
+
     const theme = `github-${scheme}`
     const anchor = commentsRef.current
     if (!anchor) return
@@ -74,7 +74,11 @@ const Utterances: React.FC<Props> = ({ issueTerm }) => {
       clearTimeout(timer)
       setIsLoaded(false)
     }
-  }, [scheme, router.asPath, issueTerm])
+  }, [scheme, router.asPath, issueTerm, shouldRender])
+
+  if (!shouldRender) {
+    return null
+  }
 
   return (
     <StyledWrapper>
