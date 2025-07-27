@@ -6,8 +6,8 @@ const CONFIG = {
     role: "ML/AI Engineer",
     bio: "just working on it.",
     email: "dla0830ld@@gmail.com",
-    linkedin: "https://www.linkedin.com/in/진수-임-43219499/",
-    github: "https://github.com/Jinsu-L",
+    linkedin: "진수-임-43219499/",
+    github: "Jinsu-L",
     instagram: "",
   },
 

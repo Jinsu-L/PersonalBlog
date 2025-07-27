@@ -37,20 +37,20 @@
     - 기존 레이아웃과 스타일을 유지하면서 자연스럽게 통합
     - _Requirements: 2.1, 2.2_
 
-- [ ] 3. RSS 피드 기능 구현
-  - [ ] 3.1 RSS 피드 생성 API 엔드포인트 작성
+- [x] 3. RSS 피드 기능 구현
+  - [x] 3.1 RSS 피드 생성 API 엔드포인트 작성
     - `src/pages/api/rss.xml.ts` 파일 생성
     - 기존 getPosts 함수를 활용하여 포스트 데이터 가져오기
     - RSS 2.0 표준 형식으로 XML 생성 (외부 라이브러리 최소 사용)
     - _Requirements: 3.1, 3.2, 3.5, 3.7_
 
-  - [ ] 3.2 RSS 피드 메타데이터 최적화
+  - [x] 3.2 RSS 피드 메타데이터 최적화
     - 포스트 제목, 설명, 링크, 발행일, 작성자 정보 포함
     - HTML 콘텐츠 안전 처리 및 이스케이핑
     - 적절한 Content-Type 헤더 설정
     - _Requirements: 3.3, 3.6_
 
-  - [ ] 3.3 네비게이션에 RSS 링크 추가
+  - [x] 3.3 네비게이션에 RSS 링크 추가
     - `src/layouts/RootLayout/Header/NavBar.tsx` 수정
     - 기존 About 링크 옆에 RSS 아이콘 링크 추가
     - 기존 스타일링과 일관된 디자인 적용
