@@ -4,6 +4,7 @@ import { idToUuid } from "notion-utils"
 
 import getAllPageIds from "src/libs/utils/notion/getAllPageIds"
 import getPageProperties from "src/libs/utils/notion/getPageProperties"
+import { calculatePostReadingTime } from "src/libs/utils/readingTime"
 import { TPosts } from "src/types"
 
 /**
@@ -42,6 +43,16 @@ export const getPosts = async () => {
       ).toString()
       properties.fullWidth =
         (block[id].value?.format as any)?.page_full_width ?? false
+
+      // Calculate reading time with caching
+      const lastEditedTime = block[id].value?.last_edited_time
+      const readingTimeResult = calculatePostReadingTime(
+        properties.summary,
+        response,
+        id,
+        lastEditedTime
+      )
+      properties.readingTime = readingTimeResult.minutes
 
       data.push(properties)
     }

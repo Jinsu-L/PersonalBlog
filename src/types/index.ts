@@ -33,10 +33,23 @@ export type TPost = {
   createdTime: string
   fullWidth: boolean
   thumbnail?: string
+  // 새로 추가된 필드들
+  readingTime?: number      // 읽기 시간 (분)
+  series?: string          // 시리즈 이름
+  seriesOrder?: number     // 시리즈 내 순서
+}
+
+// TOC 관련 타입
+export type TOCItem = {
+  id: string
+  title: string
+  level: number
+  children?: TOCItem[]
 }
 
 export type PostDetail = TPost & {
   recordMap: ExtendedRecordMap
+  headings?: TOCItem[]     // TOC 데이터
 }
 
 export type TPosts = TPost[]

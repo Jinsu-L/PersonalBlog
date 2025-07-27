@@ -2,6 +2,7 @@ import Link from "next/link"
 import { CONFIG } from "site.config"
 import { formatDate } from "src/libs/utils"
 import Tag from "../../../components/Tag"
+import ReadingTime from "../../../components/ReadingTime"
 import { TPost } from "../../../types"
 import Image from "next/image"
 import Category from "../../../components/Category"
@@ -43,6 +44,12 @@ const PostCard: React.FC<Props> = ({ data }) => {
                 CONFIG.lang
               )}
             </div>
+            {data.readingTime && (
+              <>
+                <div className="separator">•</div>
+                <ReadingTime readingTime={data.readingTime} variant="compact" />
+              </>
+            )}
           </div>
           <div className="summary">
             <p>{data.summary}</p>

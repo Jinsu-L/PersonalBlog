@@ -1,10 +1,8 @@
 import { CONFIG } from "site.config"
-import { useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import styled from "@emotion/styled"
 import useScheme from "src/hooks/useScheme"
 import { useRouter } from "next/router"
-
-//TODO: useRef?
 
 type Props = {
   issueTerm: string
@@ -13,33 +11,67 @@ type Props = {
 const Utterances: React.FC<Props> = ({ issueTerm }) => {
   const [scheme] = useScheme()
   const router = useRouter()
+  const commentsRef = useRef<HTMLDivElement>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     const theme = `github-${scheme}`
-    const script = document.createElement("script")
-    const anchor = document.getElementById("comments")
+    const anchor = commentsRef.current
     if (!anchor) return
 
-    script.setAttribute("src", "https://utteranc.es/client.js")
-    script.setAttribute("crossorigin", "anonymous")
-    script.setAttribute("async", `true`)
-    script.setAttribute("issue-term", issueTerm)
-    script.setAttribute("theme", theme)
-    const config: Record<string, string> = CONFIG.utterances.config
-    Object.keys(config).forEach((key) => {
-      script.setAttribute(key, config[key])
-    })
-    anchor.appendChild(script)
-    return () => {
-      anchor.innerHTML = ""
+    setIsLoaded(false)
+
+    // 기존 내용 안전하게 제거
+    try {
+      while (anchor.firstChild) {
+        anchor.removeChild(anchor.firstChild)
+      }
+    } catch (error) {
+      console.warn('Error clearing utterances container:', error)
     }
-  }, [scheme, router])
+
+    // 스크립트 로드
+    const timer = setTimeout(() => {
+      try {
+        const script = document.createElement("script")
+        script.src = "https://utteranc.es/client.js"
+        script.crossOrigin = "anonymous"
+        script.async = true
+        script.setAttribute("issue-term", issueTerm)
+        script.setAttribute("theme", theme)
+
+        const config: Record<string, string> = CONFIG.utterances.config
+        Object.keys(config).forEach((key) => {
+          script.setAttribute(key, config[key])
+        })
+
+        script.onload = () => setIsLoaded(true)
+        script.onerror = (error) => {
+          console.error('Utterances script failed to load:', error)
+          setIsLoaded(false)
+        }
+
+        anchor.appendChild(script)
+      } catch (error) {
+        console.error('Error creating utterances script:', error)
+      }
+    }, 200)
+
+    return () => {
+      clearTimeout(timer)
+      setIsLoaded(false)
+    }
+  }, [scheme, router.asPath, issueTerm])
+
   return (
-    <>
-      <StyledWrapper id="comments">
-        <div className="utterances-frame"></div>
-      </StyledWrapper>
-    </>
+    <StyledWrapper>
+      <div ref={commentsRef} />
+      {!isLoaded && (
+        <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+          댓글을 불러오는 중...
+        </div>
+      )}
+    </StyledWrapper>
   )
 }
 

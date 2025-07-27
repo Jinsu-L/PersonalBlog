@@ -10,9 +10,9 @@ const CONFIG = {
     github: "https://github.com/Jinsu-L",
     instagram: "",
   },
-  
+
   projects: [{ name: '', href: '' },].filter(() => false),
-    
+
   // blog setting (required)
   blog: {
     title: "j1n2u-blog",

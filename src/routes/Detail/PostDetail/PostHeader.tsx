@@ -1,5 +1,6 @@
 import { CONFIG } from "site.config"
 import Tag from "src/components/Tag"
+import ReadingTime from "src/components/ReadingTime"
 import { TPost } from "src/types"
 import { formatDate } from "src/libs/utils"
 import Image from "next/image"
@@ -38,6 +39,12 @@ const PostHeader: React.FC<Props> = ({ data }) => {
                 CONFIG.lang
               )}
             </div>
+            {data.readingTime && (
+              <>
+                <div className="hr"></div>
+                <ReadingTime readingTime={data.readingTime} variant="compact" />
+              </>
+            )}
           </div>
           <div className="mid">
             {data.tags && (
