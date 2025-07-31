@@ -11,6 +11,8 @@ import { queryKey } from "src/constants/queryKey"
 import { dehydrate } from "@tanstack/react-query"
 import usePostQuery from "src/hooks/usePostQuery"
 import { FilterPostsOptions } from "src/libs/utils/notion/filterPosts"
+import { getPostImage } from "src/libs/utils/imageUtils"
+import { extractTOCFromRecordMap } from "src/libs/utils/toc"
 
 const filter: FilterPostsOptions = {
   acceptStatus: ["Public", "PublicOnDetail"],
@@ -45,10 +47,14 @@ export const getStaticProps: GetStaticProps = async (context) => {
   }
 
   const recordMap = await getRecordMap(postDetail.id)
+  
+  // TOC 데이터 추출
+  const headings = extractTOCFromRecordMap(recordMap)
 
   await queryClient.prefetchQuery(queryKey.post(`${slug}`), () => ({
     ...postDetail,
     recordMap,
+    headings,
   }))
 
   return {
@@ -64,10 +70,7 @@ const DetailPage: NextPageWithLayout = () => {
 
   if (!post) return <CustomError />
 
-  const image =
-    post.thumbnail ??
-    CONFIG.ogImageGenerateURL ??
-    `${CONFIG.ogImageGenerateURL}/${encodeURIComponent(post.title)}.png`
+  const image = getPostImage(post)
 
   const date = post.date?.start_date || post.createdTime || ""
 
@@ -75,9 +78,12 @@ const DetailPage: NextPageWithLayout = () => {
     title: post.title,
     date: new Date(date).toISOString(),
     image: image,
-    description: post.summary || "",
+    description: post.summary || CONFIG.blog.description,
     type: post.type[0],
     url: `${CONFIG.link}/${post.slug}`,
+    post: post, // 구조화된 데이터를 위한 포스트 데이터
+    readingTime: post.readingTime, // 읽기 시간
+    keywords: [...(post.tags || []), ...(post.category || [])], // SEO 키워드
   }
 
   return (
