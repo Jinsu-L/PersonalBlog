@@ -91,8 +91,7 @@ export function useTOC() {
           activeListItemClass: 'is-active-li',
           includeHtml: false,
           orderedList: false,
-          // 프로그레스 관련 기능 비활성화
-          disableTocScrollSpy: false,
+          // 스크롤 동기화 설정
           throttleTimeout: 50,
         })
 
