@@ -25,6 +25,9 @@ const PostDetail: React.FC<Props> = () => {
   const { hasTocContent } = useTOC()
   const [isClient, setIsClient] = useState(false)
   
+  // Hook은 항상 최상단에서 호출
+  const allPosts = useAllPostsQuery()
+  
   console.log('PostDetail: Has TOC content:', hasTocContent)
 
   // 클라이언트에서만 시리즈 데이터 로드
@@ -36,8 +39,6 @@ const PostDetail: React.FC<Props> = () => {
 
   const category = (data.category && data.category?.[0]) || undefined
   
-  // 시리즈 기능을 위해 전체 posts 데이터 가져오기
-  const allPosts = useAllPostsQuery()
   console.log('PostDetail: All posts data:', allPosts?.length || 0, 'posts')
   console.log('PostDetail: Current post data:', { id: data.id, title: data.title, series: data.series })
   
