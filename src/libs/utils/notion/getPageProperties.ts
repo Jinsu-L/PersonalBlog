@@ -39,6 +39,7 @@ async function getPageProperties(
         case "select": {
           const selects = getTextContent(val)
           if (selects[0]?.length) {
+            // 기존 방식 유지 (배열로 처리)
             properties[schema[key].name] = selects.split(",")
           }
           break
@@ -79,6 +80,7 @@ async function getPageProperties(
       }
     }
   }
+  
   return properties
 }
 

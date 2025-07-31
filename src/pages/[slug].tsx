@@ -35,7 +35,12 @@ export const getStaticProps: GetStaticProps = async (context) => {
   // 방법 1: 전체 포스트 목록에서 찾기 (기존 방식 - 캐시 활용)
   const posts = await getPosts()
   const feedPosts = filterPosts(posts)
+  
+  // 메인 페이지용 필터링된 포스트 (기존 방식 유지)
   await queryClient.prefetchQuery(queryKey.posts(), () => feedPosts)
+  
+  // 시리즈 기능을 위해 전체 posts 데이터를 별도 키로 저장
+  await queryClient.prefetchQuery(['posts', 'all'], () => posts)
 
   const detailPosts = filterPosts(posts, filter)
   const postDetail = detailPosts.find((t: any) => t.slug === slug)

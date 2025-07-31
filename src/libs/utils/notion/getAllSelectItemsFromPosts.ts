@@ -2,8 +2,10 @@ import { TPosts } from "src/types"
 
 export function getAllSelectItemsFromPosts(
   key: "tags" | "category",
-  posts: TPosts
+  posts: TPosts | null
 ) {
+  if (!posts) return {}
+  
   const selectedPosts = posts.filter((post) => post?.[key])
   const items = [...selectedPosts.map((p) => p[key]).flat()]
   const itemObj: { [itemName: string]: number } = {}

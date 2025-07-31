@@ -36,6 +36,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
     <StyledWrapper 
       className={className} 
       data-variant={variant}
+      data-toc-ignore="true"
       style={{ display: hasTocContent ? 'block' : 'none' }}
     >
       <StyledHeader>
@@ -87,7 +88,7 @@ const StyledHeader = styled.div`
     theme.scheme === "light" ? theme.colors.gray4 : theme.colors.gray6};
 `
 
-const StyledTitle = styled.h3`
+const StyledTitle = styled.div`
   margin: 0;
   font-size: 1rem;
   font-weight: 600;

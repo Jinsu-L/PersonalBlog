@@ -1,4 +1,5 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import PostHeader from "./PostHeader"
 import Footer from "./PostFooter"
 import CommentBox from "./CommentBox"
@@ -7,33 +8,57 @@ import TableOfContents from "src/components/TableOfContents"
 import styled from "@emotion/styled"
 import NotionRenderer from "../components/NotionRenderer"
 import usePostQuery from "src/hooks/usePostQuery"
+import useAllPostsQuery from "src/hooks/useAllPostsQuery"
 import { useTOC } from "src/hooks/useTOC"
+import { getSeriesData } from "src/libs/utils/series"
 import { respondMobile } from "src/styles/media"
+
+// SeriesNavigation을 dynamic import로 로드 (SSR 비활성화)
+const SeriesNavigation = dynamic(() => import("src/components/SeriesNavigation"), {
+  ssr: false
+})
 
 type Props = {}
 
 const PostDetail: React.FC<Props> = () => {
   const data = usePostQuery()
   const { hasTocContent } = useTOC()
+  const [isClient, setIsClient] = useState(false)
   
   console.log('PostDetail: Has TOC content:', hasTocContent)
+
+  // 클라이언트에서만 시리즈 데이터 로드
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   if (!data) return null
 
   const category = (data.category && data.category?.[0]) || undefined
+  
+  // 시리즈 기능을 위해 전체 posts 데이터 가져오기
+  const allPosts = useAllPostsQuery()
+  console.log('PostDetail: All posts data:', allPosts?.length || 0, 'posts')
+  console.log('PostDetail: Current post data:', { id: data.id, title: data.title, series: data.series })
+  
+  // 시리즈 데이터 가져오기 (클라이언트에서만)
+  const seriesData = isClient && allPosts && allPosts.length > 0 ? getSeriesData(allPosts, data.id) : null
+  console.log('PostDetail: Series data:', seriesData)
 
   return (
     <StyledWrapper>
       <StyledContentWrapper>
-        {/* 데스크톱 전용 사이드바 TOC */}
-        <StyledSidebarTOC>
-          <TableOfContents
-            variant="sidebar"
-            hasTocContent={hasTocContent}
-          />
-        </StyledSidebarTOC>
+
         
         <StyledMainContent>
+          {/* TOC를 메인 컨테이너 레벨에서 배치 */}
+          <StyledInlineTOC>
+            <TableOfContents
+              variant="sidebar"
+              hasTocContent={hasTocContent}
+            />
+          </StyledInlineTOC>
+          
           <article>
             {category && (
               <div css={{ marginBottom: "0.5rem" }}>
@@ -43,6 +68,13 @@ const PostDetail: React.FC<Props> = () => {
               </div>
             )}
             {data.type[0] === "Post" && <PostHeader data={data} />}
+            
+            {/* 시리즈 네비게이션을 본문 위로 이동 */}
+            {data.type[0] === "Post" && seriesData && (
+              <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem' }}>
+                <SeriesNavigation seriesData={seriesData} />
+              </div>
+            )}
             
             <div>
               <NotionRenderer recordMap={data.recordMap} />
@@ -95,6 +127,9 @@ const StyledSidebarTOC = styled.div`
   top: 0;
   right: -270px;
   width: 250px;
+  
+  /* 시리즈 네비게이션이 있을 때를 고려한 위치 조정 */
+  margin-top: 0;
 
   /* 화면이 너무 작으면 숨김 */
   @media (max-width: 1400px) {
@@ -128,5 +163,22 @@ const StyledMainContent = styled.div`
     max-width: 100%;
     padding: 1.5rem;
     border-radius: 1.5rem;
+  }
+`
+
+const StyledInlineTOC = styled.div`
+  position: absolute;
+  top: 2rem; /* 목차를 2rem 아래로 이동 */
+  right: -270px;
+  width: 250px;
+  z-index: 10;
+
+  /* 화면이 너무 작으면 숨김 */
+  @media (max-width: 1400px) {
+    display: none;
+  }
+
+  ${respondMobile} {
+    display: none;
   }
 `

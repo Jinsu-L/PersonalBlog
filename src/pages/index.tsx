@@ -10,8 +10,10 @@ import { dehydrate } from "@tanstack/react-query"
 import { filterPosts } from "src/libs/utils/notion"
 
 export const getStaticProps: GetStaticProps = async () => {
-  const posts = filterPosts(await getPosts())
-  await queryClient.prefetchQuery(queryKey.posts(), () => posts)
+  const allPosts = await getPosts()
+  
+  // 전체 posts 데이터를 prefetch (Feed에서 필터링해서 사용)
+  await queryClient.prefetchQuery(queryKey.posts(), () => allPosts)
 
   return {
     props: {

@@ -10,7 +10,15 @@ type Props = {
 }
 
 const PinnedPosts: React.FC<Props> = ({ q }) => {
-  const data = usePostsQuery()
+  const allPosts = usePostsQuery()
+  // PinnedPosts에서는 필터링된 데이터만 사용
+  const data = useMemo(() => {
+    return allPosts.filter(post => {
+      const postStatus = post.status?.[0]
+      const postType = post.type?.[0]
+      return postStatus === "Public" && postType === "Post"
+    })
+  }, [allPosts])
 
   const filteredPosts = useMemo(() => {
     const baseFiltered = filterPosts({
