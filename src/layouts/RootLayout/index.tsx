@@ -67,6 +67,6 @@ export default RootLayout
 const StyledMain = styled.main`
   margin: 0 auto;
   width: 100%;
-  max-width: 1500px; /* 적당한 크기로 조정 */
+  max-width: 1300px; /* 헤더와 동일하게 통일 */
   padding: 0 1rem;
 `

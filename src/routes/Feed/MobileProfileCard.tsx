@@ -2,6 +2,7 @@ import { CONFIG } from "site.config"
 import Image from "next/image"
 import React from "react"
 import styled from "@emotion/styled"
+import { Emoji } from "src/components/Emoji"
 
 type Props = {
   className?: string
@@ -10,7 +11,7 @@ type Props = {
 const MobileProfileCard: React.FC<Props> = () => {
   return (
     <StyledWrapper>
-      <div className="top">💻 Profile</div>
+      <div className="top"><b>Profile</b></div>
       <div className="mid">
         <div className="wrapper">
           <Image

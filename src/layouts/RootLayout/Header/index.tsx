@@ -38,7 +38,7 @@ const StyledWrapper = styled.div`
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    max-width: 1120px;
+    max-width: 1300px; /* 적당한 크기로 조정 */
     height: 3rem;
     margin: 0 auto;
     &[data-full-width="true"] {

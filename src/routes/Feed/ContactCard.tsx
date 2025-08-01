@@ -13,7 +13,7 @@ const ContactCard: React.FC = () => {
   return (
     <>
       <StyledTitle>
-        <Emoji>💬</Emoji> Contact
+        <b>Contact</b>
       </StyledTitle>
       <StyledWrapper>
         {CONFIG.profile.github && (
