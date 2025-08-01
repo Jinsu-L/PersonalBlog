@@ -24,10 +24,10 @@ const PostDetail: React.FC<Props> = () => {
   const data = usePostQuery()
   const { hasTocContent } = useTOC()
   const [isClient, setIsClient] = useState(false)
-  
+
   // Hook은 항상 최상단에서 호출
   const allPosts = useAllPostsQuery()
-  
+
   console.log('PostDetail: Has TOC content:', hasTocContent)
 
   // 클라이언트에서만 시리즈 데이터 로드
@@ -38,10 +38,10 @@ const PostDetail: React.FC<Props> = () => {
   if (!data) return null
 
   const category = (data.category && data.category?.[0]) || undefined
-  
+
   console.log('PostDetail: All posts data:', allPosts?.length || 0, 'posts')
   console.log('PostDetail: Current post data:', { id: data.id, title: data.title, series: data.series })
-  
+
   // 시리즈 데이터 가져오기 (클라이언트에서만)
   const seriesData = isClient && allPosts && allPosts.length > 0 ? getSeriesData(allPosts, data.id) : null
   console.log('PostDetail: Series data:', seriesData)
@@ -50,7 +50,7 @@ const PostDetail: React.FC<Props> = () => {
     <StyledWrapper>
       <StyledContentWrapper>
 
-        
+
         <StyledMainContent>
           <article>
             {category && (
@@ -61,14 +61,14 @@ const PostDetail: React.FC<Props> = () => {
               </div>
             )}
             {data.type[0] === "Post" && <PostHeader data={data} />}
-            
+
             {/* 시리즈 네비게이션을 본문 위로 이동 */}
             {data.type[0] === "Post" && seriesData && (
               <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem' }}>
                 <SeriesNavigation seriesData={seriesData} />
               </div>
             )}
-            
+
             <div>
               <NotionRenderer recordMap={data.recordMap} />
             </div>
@@ -80,14 +80,16 @@ const PostDetail: React.FC<Props> = () => {
             )}
           </article>
         </StyledMainContent>
-        
-        {/* TOC를 포스트 옆에 배치 */}
-        <StyledInlineTOC>
-          <TableOfContents
-            variant="sidebar"
-            hasTocContent={hasTocContent}
-          />
-        </StyledInlineTOC>
+
+        {/* TOC를 포스트 옆에 배치 (Paper 타입 제외) */}
+        {data.type[0] !== "Paper" && (
+          <StyledInlineTOC>
+            <TableOfContents
+              variant="sidebar"
+              hasTocContent={hasTocContent}
+            />
+          </StyledInlineTOC>
+        )}
       </StyledContentWrapper>
     </StyledWrapper>
   )
