@@ -2,7 +2,7 @@ const CONFIG = {
   // profile setting (required)
   profile: {
     name: "j1n2u / 임진수",
-    image: "https://notion-avatar.app/api/svg/eyJmYWNlIjozLCJub3NlIjo3LCJtb3V0aCI6MTEsImV5ZXMiOjksImV5ZWJyb3dzIjowLCJnbGFzc2VzIjowLCJoYWlyIjo2LCJhY2Nlc3NvcmllcyI6MCwiZGV0YWlscyI6MywiYmVhcmQiOjAsImZsaXAiOjAsImNvbG9yIjoicmdiYSgyNTUsIDAsIDAsIDApIiwic2hhcGUiOiJub25lIn0=", // If you want to create your own notion avatar, check out https://notion-avatar.vercel.app
+    image: "/my_profile.png", // Custom profile image
     role: "ML/AI Engineer",
     bio: "just working on it.",
     email: "dla0830ld@@gmail.com",
