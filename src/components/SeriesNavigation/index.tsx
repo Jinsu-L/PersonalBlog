@@ -119,7 +119,8 @@ const StyledWrapper = styled.div`
     theme.scheme === "light" ? theme.colors.gray4 : theme.colors.gray6};
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  margin: 0; /* 외부에서 마진 제어 */
+  margin: 0 auto; /* 중앙 정렬 */
+  max-width: 720px; /* 시리즈 네비게이션 크기 제한 */
 `
 
 const StyledHeader = styled.div`

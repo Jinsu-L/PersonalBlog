@@ -101,20 +101,24 @@ const StyledWrapper = styled.div`
   padding-top: 3rem;
   padding-bottom: 3rem;
   margin: 0 auto;
-  max-width: 90rem;
-  /* sticky positioning을 위해 overflow 제거 */
+  max-width: 150rem; /* 포스트 94rem + TOC 280px + 간격을 위해 충분히 넓게 */
+  /* sticky 동작을 위해 높이 제한 제거 */
+  min-height: 100vh;
 
   ${respondMobile} {
-    max-width: 56rem;
+    max-width: 94rem; /* 모바일에서도 최대한 넓게 */
+    padding-left: 0.75rem; /* 모바일 좌우 여백을 절반으로 줄임 */
+    padding-right: 0.75rem;
   }
 `
 
 const StyledContentWrapper = styled.div`
   display: flex;
-  gap: 0;
+  gap: 2rem;
   align-items: flex-start;
   justify-content: center;
   position: relative;
+  /* sticky 동작을 위해 높이 제한 제거 */
 
   ${respondMobile} {
     flex-direction: column;
@@ -143,8 +147,8 @@ const StyledSidebarTOC = styled.div`
 `
 
 const StyledMainContent = styled.div`
-  width: 56rem;
-  max-width: 56rem;
+  width: 94rem; /* 포스트 컨테이너를 1500px 근처까지 (94rem ≈ 1504px) */
+  max-width: 94rem;
   border-radius: 1.5rem;
   background-color: ${({ theme }) =>
     theme.scheme === "light" ? "white" : theme.colors.gray4};
@@ -154,24 +158,25 @@ const StyledMainContent = styled.div`
 
   > article {
     margin: 0 auto;
-    max-width: 42rem;
+    max-width: 88rem; /* 포스트 내용 영역을 1400px 근처까지 (88rem ≈ 1408px) */
   }
 
   ${respondMobile} {
     width: 100%;
     max-width: 100%;
-    padding: 1.5rem;
+    padding: 0.75rem; /* 모바일 여백을 절반으로 줄임 (1.5rem → 0.75rem) */
     border-radius: 1.5rem;
   }
 `
 
 const StyledInlineTOC = styled.div`
   flex-shrink: 0;
-  width: 250px;
-  margin-left: 2rem;
+  width: 280px;
+  /* sticky 동작을 위해 높이를 뷰포트 높이로 설정 */
+  height: fit-content;
 
   /* 화면이 너무 작으면 숨김 */
-  @media (max-width: 1400px) {
+  @media (max-width: 1300px) {
     display: none;
   }
 

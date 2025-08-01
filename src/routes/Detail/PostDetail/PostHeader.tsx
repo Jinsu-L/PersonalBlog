@@ -125,6 +125,9 @@ const StyledWrapper = styled.div`
       margin-bottom: 1.75rem;
       border-radius: 1.5rem;
       width: 100%;
+      max-width: 720px; /* 썸네일 이미지 크기 제한 */
+      margin-left: auto;
+      margin-right: auto;
       background-color: ${({ theme }) => theme.colors.gray4};
       padding-bottom: 66%;
 

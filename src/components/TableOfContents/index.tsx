@@ -67,11 +67,12 @@ const StyledWrapper = styled.div`
     position: sticky;
     top: 2rem;
     max-height: calc(100vh - 4rem);
-    width: 250px;
+    width: 100%;
     z-index: 10;
+    /* sticky가 작동하도록 부모 요소의 높이 제한 해제 */
     
     /* 화면이 작으면 완전히 숨김 */
-    @media (max-width: 1400px) {
+    @media (max-width: 1300px) {
       display: none !important;
     }
   }
