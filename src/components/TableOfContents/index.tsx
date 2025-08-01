@@ -64,15 +64,14 @@ const StyledWrapper = styled.div`
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
   &[data-variant="sidebar"] {
-    position: fixed;
-    top: 6rem;
-    right: 3rem;
-    max-height: calc(100vh - 8rem);
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
     width: 250px;
     z-index: 10;
     
     /* 화면이 작으면 완전히 숨김 */
-    @media (max-width: 1500px) {
+    @media (max-width: 1400px) {
       display: none !important;
     }
   }

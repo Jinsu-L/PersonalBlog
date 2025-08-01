@@ -52,14 +52,6 @@ const PostDetail: React.FC<Props> = () => {
 
         
         <StyledMainContent>
-          {/* TOC를 메인 컨테이너 레벨에서 배치 */}
-          <StyledInlineTOC>
-            <TableOfContents
-              variant="sidebar"
-              hasTocContent={hasTocContent}
-            />
-          </StyledInlineTOC>
-          
           <article>
             {category && (
               <div css={{ marginBottom: "0.5rem" }}>
@@ -88,6 +80,14 @@ const PostDetail: React.FC<Props> = () => {
             )}
           </article>
         </StyledMainContent>
+        
+        {/* TOC를 포스트 옆에 배치 */}
+        <StyledInlineTOC>
+          <TableOfContents
+            variant="sidebar"
+            hasTocContent={hasTocContent}
+          />
+        </StyledInlineTOC>
       </StyledContentWrapper>
     </StyledWrapper>
   )
@@ -111,7 +111,7 @@ const StyledWrapper = styled.div`
 
 const StyledContentWrapper = styled.div`
   display: flex;
-  gap: 2rem;
+  gap: 0;
   align-items: flex-start;
   justify-content: center;
   position: relative;
@@ -145,14 +145,12 @@ const StyledSidebarTOC = styled.div`
 const StyledMainContent = styled.div`
   width: 56rem;
   max-width: 56rem;
-  margin: 0 auto; /* 중앙 정렬 */
   border-radius: 1.5rem;
   background-color: ${({ theme }) =>
     theme.scheme === "light" ? "white" : theme.colors.gray4};
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 3rem;
-  position: relative; /* TOC 위치 기준점 */
 
   > article {
     margin: 0 auto;
@@ -168,11 +166,9 @@ const StyledMainContent = styled.div`
 `
 
 const StyledInlineTOC = styled.div`
-  position: absolute;
-  top: 2rem; /* 목차를 2rem 아래로 이동 */
-  right: -270px;
+  flex-shrink: 0;
   width: 250px;
-  z-index: 10;
+  margin-left: 2rem;
 
   /* 화면이 너무 작으면 숨김 */
   @media (max-width: 1400px) {
