@@ -1,7 +1,7 @@
 const CONFIG = {
   // profile setting (required)
   profile: {
-    name: "j1n2u / 임진수",
+    name: "임진수",
     image: "/my_profile.png", // Custom profile image
     role: "ML/AI Engineer",
     bio: "just working on it.",

@@ -9,7 +9,7 @@ const NavBar: React.FC = () => {
       <ul>
         {links.map((link) => (
           <li key={link.id}>
-            <Link href={link.to}>{link.name}</Link>
+            <b><Link href={link.to}>{link.name}</Link></b>
           </li>
         ))}
         <li>
