@@ -147,8 +147,8 @@ const StyledSidebarTOC = styled.div`
 `
 
 const StyledMainContent = styled.div`
-  width: 94rem; /* 포스트 컨테이너를 1500px 근처까지 (94rem ≈ 1504px) */
-  max-width: 94rem;
+  width: 100%;
+  max-width: 94rem; /* TOC가 있을 때 최대 크기 */
   border-radius: 1.5rem;
   background-color: ${({ theme }) =>
     theme.scheme === "light" ? "white" : theme.colors.gray4};
@@ -158,7 +158,16 @@ const StyledMainContent = styled.div`
 
   > article {
     margin: 0 auto;
-    max-width: 88rem; /* 포스트 내용 영역을 1400px 근처까지 (88rem ≈ 1408px) */
+    max-width: 88rem; /* 포스트 내용 영역 최대 크기 */
+  }
+
+  /* TOC가 없을 때 (1300px 이하) 포스트 크기 제한 */
+  @media (max-width: 1300px) {
+    max-width: 62.5rem; /* TOC 없을 때는 1000px로 제한 */
+    
+    > article {
+      max-width: 56.5rem; /* 포스트 내용은 약 904px */
+    }
   }
 
   ${respondMobile} {
