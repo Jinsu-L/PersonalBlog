@@ -17,8 +17,8 @@ export const getPostImage = (post: {
     return `${CONFIG.ogImageGenerateURL}/${encodeURIComponent(post.title)}.png`
   }
 
-  // 3. 기본 아바타 이미지 사용
-  return `${CONFIG.link}/avatar.svg`
+  // 3. 기본 프로필 이미지 사용
+  return `${CONFIG.link}${CONFIG.profile.image}`
 }
 
 /**
@@ -45,7 +45,7 @@ export const getDefaultImage = (title?: string): string => {
     return `${CONFIG.ogImageGenerateURL}/${encodeURIComponent(title)}.png`
   }
   
-  return `${CONFIG.link}/avatar.svg`
+  return `${CONFIG.link}${CONFIG.profile.image}`
 }
 
 /**
