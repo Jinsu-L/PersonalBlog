@@ -98,8 +98,8 @@ export default PostDetail
 const StyledWrapper = styled.div`
   padding-left: 1.5rem;
   padding-right: 1.5rem;
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
   margin: 0 auto;
   max-width: 150rem; /* 포스트 94rem + TOC 280px + 간격을 위해 충분히 넓게 */
   /* sticky 동작을 위해 높이 제한 제거 */
@@ -107,8 +107,9 @@ const StyledWrapper = styled.div`
 
   ${respondMobile} {
     max-width: 94rem; /* 모바일에서도 최대한 넓게 */
-    padding-left: 0.75rem; /* 모바일 좌우 여백을 절반으로 줄임 */
-    padding-right: 0.75rem;
+    padding-left: 0; /* 모바일 외부 좌우 여백 0 */
+    padding-right: 0;
+    padding-top: 0.5rem; /* 모바일 외부 상단 여백을 더 줄임 */
   }
 `
 
@@ -118,7 +119,8 @@ const StyledContentWrapper = styled.div`
   align-items: flex-start;
   justify-content: center;
   position: relative;
-  /* sticky 동작을 위해 높이 제한 제거 */
+  /* sticky 동작을 위해 높이와 overflow 제한 해제 */
+  min-height: 100vh;
 
   ${respondMobile} {
     flex-direction: column;
@@ -147,8 +149,8 @@ const StyledSidebarTOC = styled.div`
 `
 
 const StyledMainContent = styled.div`
-  width: 100%;
-  max-width: 94rem; /* TOC가 있을 때 최대 크기 */
+  width: 56rem; /* 이전 크기로 복구 (896px) */
+  max-width: 56rem;
   border-radius: 1.5rem;
   background-color: ${({ theme }) =>
     theme.scheme === "light" ? "white" : theme.colors.gray4};
@@ -158,7 +160,7 @@ const StyledMainContent = styled.div`
 
   > article {
     margin: 0 auto;
-    max-width: 88rem; /* 포스트 내용 영역 최대 크기 */
+    max-width: 50rem; /* 이전보다 조금 더 넓게 (800px) */
   }
 
   /* TOC가 없을 때 (1300px 이하) 포스트 크기 제한 */
@@ -173,7 +175,7 @@ const StyledMainContent = styled.div`
   ${respondMobile} {
     width: 100%;
     max-width: 100%;
-    padding: 0.75rem; /* 모바일 여백을 절반으로 줄임 (1.5rem → 0.75rem) */
+    padding: 1.5rem; /* 모바일 내부 패딩을 늘림 */
     border-radius: 1.5rem;
   }
 `
@@ -181,8 +183,9 @@ const StyledMainContent = styled.div`
 const StyledInlineTOC = styled.div`
   flex-shrink: 0;
   width: 280px;
-  /* sticky 동작을 위해 높이를 뷰포트 높이로 설정 */
   height: fit-content;
+  /* sticky 동작을 보장하기 위한 설정 */
+  position: relative;
 
   /* 화면이 너무 작으면 숨김 */
   @media (max-width: 1300px) {

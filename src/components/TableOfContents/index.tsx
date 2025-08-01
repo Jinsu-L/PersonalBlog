@@ -33,8 +33,8 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
   }
 
   return (
-    <StyledWrapper 
-      className={className} 
+    <StyledWrapper
+      className={className}
       data-variant={variant}
       data-toc-ignore="true"
       style={{ display: hasTocContent ? 'block' : 'none' }}
@@ -42,9 +42,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
       <StyledHeader>
         <StyledTitle>목차</StyledTitle>
       </StyledHeader>
-      
-      <StyledTocContainer 
-        className="toc-container" 
+
+      <StyledTocContainer
+        className="toc-container"
         onClick={handleTocClick}
       />
     </StyledWrapper>
@@ -64,12 +64,12 @@ const StyledWrapper = styled.div`
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
   &[data-variant="sidebar"] {
-    position: sticky;
-    top: 2rem;
-    max-height: calc(100vh - 4rem);
-    width: 100%;
+    position: fixed;
+    top: 6rem; /* 확 더 올림 */
+    right: max(1rem, calc((100vw - 1200px) / 2 - 1rem)); /* 포스트와 간격을 1rem 더 늘림 */
+    max-height: calc(100vh - 9rem); /* top 변경에 맞춰 조정 */
+    width: 280px;
     z-index: 10;
-    /* sticky가 작동하도록 부모 요소의 높이 제한 해제 */
     
     /* 화면이 작으면 완전히 숨김 */
     @media (max-width: 1300px) {
@@ -134,13 +134,13 @@ const StyledTocContainer = styled.div`
   
   &::-webkit-scrollbar-thumb {
     background: ${({ theme }) =>
-      theme.scheme === "light" ? theme.colors.gray6 : theme.colors.gray8};
+    theme.scheme === "light" ? theme.colors.gray6 : theme.colors.gray8};
     border-radius: 2px;
   }
   
   &::-webkit-scrollbar-thumb:hover {
     background: ${({ theme }) =>
-      theme.scheme === "light" ? theme.colors.gray8 : theme.colors.gray10};
+    theme.scheme === "light" ? theme.colors.gray8 : theme.colors.gray10};
   }
 
   /* tocbot 기본 스타일 오버라이드 */
@@ -160,21 +160,21 @@ const StyledTocContainer = styled.div`
     display: block;
     padding: 0.375rem 0.5rem;
     color: ${({ theme }) =>
-      theme.scheme === "light" ? theme.colors.gray11 : theme.colors.gray11};
+    theme.scheme === "light" ? theme.colors.gray11 : theme.colors.gray11};
     text-decoration: none;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.875rem;
-    line-height: 1.4;
+    line-height: 1.4; /* 줄 간격 원래대로 */
     border: none;
     background: none;
 
     &:hover {
       background-color: ${({ theme }) =>
-        theme.scheme === "light" ? theme.colors.indigo3 : theme.colors.indigo3};
+    theme.scheme === "light" ? theme.colors.indigo3 : theme.colors.indigo3};
       color: ${({ theme }) =>
-        theme.scheme === "light" ? theme.colors.indigo11 : theme.colors.indigo11};
+    theme.scheme === "light" ? theme.colors.indigo11 : theme.colors.indigo11};
     }
 
     &:focus {
@@ -184,9 +184,9 @@ const StyledTocContainer = styled.div`
 
     &.is-active-link {
       background-color: ${({ theme }) =>
-        theme.scheme === "light" ? theme.colors.indigo4 : theme.colors.indigo4};
+    theme.scheme === "light" ? theme.colors.indigo4 : theme.colors.indigo4};
       color: ${({ theme }) =>
-        theme.scheme === "light" ? theme.colors.indigo12 : theme.colors.indigo12};
+    theme.scheme === "light" ? theme.colors.indigo12 : theme.colors.indigo12};
       font-weight: 600;
     }
   }
@@ -220,7 +220,7 @@ const StyledTocContainer = styled.div`
   /* 활성 상태 스타일 */
   .toc-list-item.is-active-li > .toc-link {
     color: ${({ theme }) =>
-      theme.scheme === "light" ? theme.colors.indigo12 : theme.colors.indigo12};
+    theme.scheme === "light" ? theme.colors.indigo12 : theme.colors.indigo12};
   }
 
   /* 접힌 상태 스타일 */
