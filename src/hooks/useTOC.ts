@@ -1,186 +1,436 @@
-import { useState, useEffect } from "react"
-import tocbot from "tocbot"
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { TOCItemWithCache, TOCConfig, TOCState } from '../types'
+import {
+  extractTOCWithCache,
+  flattenTOC,
+  shouldShowTOC,
+  updateTOCItemOffsets
+} from '../libs/utils/toc'
+import { tocLogger, perfLogger } from '../libs/utils/logger'
 
-// tocbot CSS 임포트
-import "tocbot/dist/tocbot.css"
+const DEFAULT_CONFIG: TOCConfig = {
+  headingSelector: 'h1, h2, h3',
+  minHeadings: 3,
+  scrollOffset: 80,
+  throttleDelay: 100
+}
+
+export interface UseTOCOptions {
+  contentSelector?: string
+  headingSelector?: string
+  minHeadings?: number
+  scrollOffset?: number
+  throttleDelay?: number
+}
+
+export interface UseTOCReturn {
+  tocItems: TOCItemWithCache[]
+  activeId: string | null
+  isVisible: boolean
+  scrollToHeading: (id: string) => void
+}
 
 /**
- * tocbot을 사용한 간단한 TOC 훅
+ * TOC (Table of Contents) 훅
+ * 
+ * 블로그 포스트의 헤딩 구조를 추출하여 목차를 생성하고 스크롤 동기화를 제공합니다.
+ * 
+ * @param options TOC 설정 옵션
+ * @returns TOC 상태 및 제어 함수들
  */
-export function useTOC() {
-  const [hasTocContent, setHasTocContent] = useState(false)
-  const [activeId, setActiveId] = useState<string>('')
+export function useTOC(options: UseTOCOptions = {}): UseTOCReturn {
+  // 반응형 최적화: 모바일이나 TOC가 숨겨지는 화면에서는 초기화 건너뛰기
+  const shouldSkipInitialization = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    
+    const isMobile = window.matchMedia('(max-width: 960px)').matches
+    const shouldHideTOC = window.matchMedia('(max-width: 1300px)').matches
+    
+    const shouldSkip = isMobile || shouldHideTOC
+    
+    if (shouldSkip) {
+      tocLogger.info('TOC initialization skipped due to responsive breakpoint', {
+        isMobile,
+        shouldHideTOC,
+        screenWidth: window.innerWidth
+      })
+    }
+    
+    return shouldSkip
+  }, [])
 
-  console.log('TOC Hook: useTOC called')
+  // 성능 측정을 위한 초기화 시간 기록
+  const initStartTime = useRef<number>(performance.now())
+  const [isInitialized, setIsInitialized] = useState(false)
 
-  // tocbot 초기화
-  useEffect(() => {
-    console.log('TOC Hook: Initializing tocbot - useEffect started')
+  // 설정값 병합
+  const config = useMemo(() => ({
+    ...DEFAULT_CONFIG,
+    ...options
+  }), [options])
 
-    const initTocbot = () => {
-      console.log('TOC Hook: Setting up tocbot')
+  // TOC 상태 관리
+  const [tocState, setTocState] = useState<TOCState>({
+    items: [],
+    activeId: null,
+    isVisible: false
+  })
 
-      try {
-        // 먼저 기존 tocbot 인스턴스 제거
-        tocbot.destroy()
+  // 스크롤 동기화를 위한 ref들
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const throttleTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isScrollingRef = useRef(false)
 
-        // TOC 컨테이너가 존재하는지 확인
-        const tocContainer = document.querySelector('.toc-container')
-        console.log('TOC Hook: TOC container found:', !!tocContainer)
-        
-        if (!tocContainer) {
-          console.log('TOC Hook: TOC container not found')
-          setHasTocContent(false)
-          return
-        }
+  const contentSelector = config.contentSelector || 'article'
 
-        // article 요소가 존재하는지 확인
-        const articleElement = document.querySelector('article')
-        console.log('TOC Hook: Article element found:', !!articleElement)
-        
-        if (!articleElement) {
-          console.log('TOC Hook: Article element not found')
-          setHasTocContent(false)
-          return
-        }
+  // TOC 데이터 상태 관리
+  const [tocItems, setTocItems] = useState<TOCItemWithCache[]>([])
+  const [lastExtractTime, setLastExtractTime] = useState<number>(0)
 
-        // 헤딩 요소들 찾기 및 ID 부여 (h1, h2, h3까지만)
-        const headings = articleElement.querySelectorAll('h1, h2, h3')
-        console.log('TOC Hook: Found headings in article:', headings.length)
-
-        if (headings.length < 3) {
-          console.log('TOC Hook: Not enough headings (need at least 3)')
-          setHasTocContent(false)
-          return
-        }
-
-        // 헤딩에 ID 부여 (tocbot 요구사항)
-        headings.forEach((heading, index) => {
-          const headingElement = heading as HTMLElement
-          if (!headingElement.id) {
-            const text = headingElement.textContent?.trim() || ''
-            // 더 안전한 ID 생성
-            const id = text
-              .toLowerCase()
-              .replace(/[^a-z0-9가-힣\s-]/g, '') // 한글, 영문, 숫자, 공백, 하이픈만 허용
-              .replace(/\s+/g, '-') // 공백을 하이픈으로
-              .replace(/-+/g, '-') // 연속 하이픈을 하나로
-              .replace(/^-|-$/g, '') // 시작/끝 하이픈 제거
-              .trim()
-            
-            headingElement.id = id || `heading-${index}`
-            console.log(`TOC Hook: Set ID "${headingElement.id}" for heading "${text}"`)
-          }
-        })
-
-        console.log('TOC Hook: About to initialize tocbot')
-
-        // tocbot 초기화
-        tocbot.init({
-          tocSelector: '.toc-container',
-          contentSelector: 'article',
-          headingSelector: 'h1, h2, h3', // h1, h2, h3까지만 표시
-          hasInnerContainers: true,
-          headingsOffset: 80,
-          scrollSmoothOffset: -80,
-          collapseDepth: 3, // 3단계까지만 표시
-          activeLinkClass: 'is-active-link',
-          listClass: 'toc-list',
-          listItemClass: 'toc-list-item',
-          linkClass: 'toc-link',
-          activeListItemClass: 'is-active-li',
-          includeHtml: false,
-          orderedList: false,
-          // 스크롤 동기화 설정
-          throttleTimeout: 50,
-        })
-
-        console.log('TOC Hook: tocbot.init completed')
-
-        // TOC 내용 확인
-        setTimeout(() => {
-          const tocElement = document.querySelector('.toc-container')
-          const hasContent = tocElement && tocElement.innerHTML.trim() !== ''
-          
-          console.log('TOC Hook: TOC element:', tocElement)
-          console.log('TOC Hook: TOC content length:', tocElement?.innerHTML?.length || 0)
-          console.log('TOC Hook: Has content:', hasContent)
-          
-          setHasTocContent(!!hasContent)
-          
-          // 스크롤 스파이 설정
-          if (hasContent) {
-            setupScrollSpy()
-          }
-        }, 200)
-
-      } catch (error) {
-        console.error('TOC Hook: Error during tocbot initialization:', error)
-        setHasTocContent(false)
-      }
+  // TOC 데이터 추출 함수
+  const extractTOCData = useCallback(() => {
+    if (shouldSkipInitialization) {
+      tocLogger.debug('TOC data extraction skipped due to responsive optimization')
+      setTocItems([])
+      return []
     }
 
-    // 스크롤 스파이 설정 함수
-    const setupScrollSpy = () => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const id = entry.target.id
-              setActiveId(id)
-              
-              // TOC 링크 활성화 상태 업데이트
-              const tocLinks = document.querySelectorAll('.toc-link')
-              tocLinks.forEach((link) => {
-                link.classList.remove('is-active-link')
-                if (link.getAttribute('href') === `#${id}`) {
-                  link.classList.add('is-active-link')
-                }
-              })
-              
-              console.log('TOC Hook: Active section:', id)
+    const startTime = performance.now()
+    tocLogger.debug('Extracting TOC data...')
+    
+    try {
+      const items = extractTOCWithCache(
+        contentSelector,
+        config.headingSelector,
+        config.minHeadings
+      )
+      
+      const endTime = performance.now()
+      const extractionTime = endTime - startTime
+      
+      tocLogger.info(`Successfully extracted ${items.length} TOC items in ${extractionTime.toFixed(2)}ms`)
+      perfLogger.info(`TOC extraction time: ${extractionTime.toFixed(2)}ms`)
+      
+      setTocItems(items)
+      setLastExtractTime(Date.now())
+      return items
+    } catch (error) {
+      tocLogger.error('Error extracting TOC data:', error)
+      setTocItems([])
+      return []
+    }
+  }, [contentSelector, config.headingSelector, config.minHeadings, shouldSkipInitialization])
+
+  // 초기 TOC 데이터 추출 및 지연된 재추출
+  useEffect(() => {
+    let isMounted = true
+    
+    extractTOCData()
+
+    // Notion 콘텐츠 로딩을 위한 지연된 재추출
+    const timeouts = [500, 1000, 2000, 3000].map(delay => 
+      setTimeout(() => {
+        if (isMounted) {
+          tocLogger.debug(`Delayed re-extraction after ${delay}ms`)
+          extractTOCData()
+        }
+      }, delay)
+    )
+
+    return () => {
+      isMounted = false
+      timeouts.forEach(timeout => clearTimeout(timeout))
+    }
+  }, [])
+
+  // MutationObserver로 DOM 변경 감지 및 TOC 재추출
+  useEffect(() => {
+    if (shouldSkipInitialization) {
+      tocLogger.debug('MutationObserver setup skipped due to responsive optimization')
+      return
+    }
+
+    const contentElement = document.querySelector(contentSelector)
+    if (!contentElement) {
+      tocLogger.warn(`Content element not found: ${contentSelector}`)
+      return
+    }
+
+    tocLogger.debug('Setting up MutationObserver for dynamic content...')
+    
+    let debounceTimeout: NodeJS.Timeout | null = null
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      let shouldReextract = false
+
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as Element
+              if (element.matches && (
+                element.matches(config.headingSelector) ||
+                element.querySelector && element.querySelector(config.headingSelector)
+              )) {
+                shouldReextract = true
+              }
             }
           })
-        },
-        {
-          rootMargin: '-20% 0% -35% 0%',
-          threshold: 0.1
-        }
-      )
-
-      // h1, h2, h3까지만 관찰
-      const headings = document.querySelectorAll('article h1, article h2, article h3')
-      headings.forEach((heading) => {
-        if (heading.id) {
-          observer.observe(heading)
         }
       })
 
-      // cleanup 함수에서 observer 해제
-      return () => {
-        headings.forEach((heading) => {
-          if (heading.id) {
-            observer.unobserve(heading)
-          }
-        })
+      if (shouldReextract) {
+        if (debounceTimeout) {
+          clearTimeout(debounceTimeout)
+        }
+        
+        debounceTimeout = setTimeout(() => {
+          tocLogger.debug('DOM changes detected, re-extracting TOC...')
+          extractTOCData()
+        }, 500)
       }
-    }
+    })
 
-    // DOM이 완전히 로드된 후 실행
-    const timer = setTimeout(() => {
-      console.log('TOC Hook: Timer executed, initializing...')
-      initTocbot()
-    }, 2000) // 타이밍을 다시 2초로 늘림
+    mutationObserver.observe(contentElement, {
+      childList: true,
+      subtree: true
+    })
 
     return () => {
-      console.log('TOC Hook: Cleaning up')
-      clearTimeout(timer)
-      tocbot.destroy()
+      mutationObserver.disconnect()
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout)
+      }
+    }
+  }, [contentSelector, config.headingSelector, shouldSkipInitialization])
+
+  // TOC 가시성 결정
+  const isVisible = useMemo(() => {
+    const shouldShow = shouldShowTOC(tocItems, config.minHeadings)
+    tocLogger.debug(`Visibility determined - ${shouldShow ? 'visible' : 'hidden'}`)
+    return shouldShow
+  }, [tocItems, config.minHeadings])
+
+  // 평면화된 TOC 아이템 목록 (스크롤 동기화용)
+  const flatTocItems = useMemo((): TOCItemWithCache[] => {
+    return flattenTOC(tocItems)
+  }, [tocItems])
+
+  // TOC 상태 업데이트 및 초기화 완료 측정
+  useEffect(() => {
+    setTocState(prevState => ({
+      ...prevState,
+      items: tocItems,
+      isVisible
+    }))
+
+    if (!isInitialized && tocItems.length > 0) {
+      const initEndTime = performance.now()
+      const initTime = initEndTime - initStartTime.current
+      
+      perfLogger.info(`TOC initialization completed in ${initTime.toFixed(2)}ms`)
+      
+      if (initTime <= 500) {
+        perfLogger.info(`TOC initialization meets 500ms requirement (${initTime.toFixed(2)}ms)`)
+      } else {
+        perfLogger.warn(`TOC initialization exceeds 500ms requirement (${initTime.toFixed(2)}ms)`)
+      }
+      
+      setIsInitialized(true)
+    }
+  }, [tocItems, isVisible, isInitialized])
+
+  // 스크롤 위치 업데이트
+  const updateOffsets = useCallback(() => {
+    if (tocItems.length > 0) {
+      updateTOCItemOffsets(tocItems)
+    }
+  }, [tocItems])
+
+  // 리사이즈 이벤트 핸들러
+  useEffect(() => {
+    const handleResize = () => {
+      updateOffsets()
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [updateOffsets])
+
+  // 스크롤 동기화 로직 (IntersectionObserver 사용)
+  useEffect(() => {
+    if (shouldSkipInitialization || !isVisible || flatTocItems.length === 0) {
+      if (shouldSkipInitialization) {
+        tocLogger.debug('Scroll synchronization skipped due to responsive optimization')
+      }
+      return
+    }
+
+    tocLogger.debug('Setting up scroll synchronization...')
+
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+    }
+
+    const observerOptions: IntersectionObserverInit = {
+      rootMargin: `-${config.scrollOffset}px 0px -35% 0px`,
+      threshold: [0, 0.1, 0.5, 1.0]
+    }
+
+    const throttledUpdateActiveSection = (entries: IntersectionObserverEntry[]) => {
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current)
+      }
+
+      throttleTimeoutRef.current = setTimeout(() => {
+        if (isScrollingRef.current) {
+          return
+        }
+
+        let activeEntry: IntersectionObserverEntry | null = null
+        let maxIntersectionRatio = 0
+
+        entries.forEach(entry => {
+          if (entry.isIntersecting && entry.intersectionRatio > maxIntersectionRatio) {
+            maxIntersectionRatio = entry.intersectionRatio
+            activeEntry = entry
+          }
+        })
+
+        if (!activeEntry) {
+          activeEntry = entries.find(entry => entry.isIntersecting) || null
+        }
+
+        if (activeEntry) {
+          const newActiveId = activeEntry.target.id
+          tocLogger.debug(`Active section changed to: ${newActiveId}`)
+          
+          setTocState(prevState => ({
+            ...prevState,
+            activeId: newActiveId
+          }))
+        }
+      }, config.throttleDelay)
+    }
+
+    observerRef.current = new IntersectionObserver(
+      throttledUpdateActiveSection,
+      observerOptions
+    )
+
+    flatTocItems.forEach(item => {
+      if (item.element) {
+        observerRef.current!.observe(item.element)
+      } else {
+        const element = document.getElementById(item.id)
+        if (element) {
+          item.element = element as HTMLElement
+          observerRef.current!.observe(element)
+        }
+      }
+    })
+
+    tocLogger.debug(`Started observing ${flatTocItems.length} heading elements`)
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current)
+      }
+    }
+  }, [isVisible, flatTocItems, config.scrollOffset, config.throttleDelay, shouldSkipInitialization])
+
+  // 스크롤 이동 함수
+  const scrollToHeading = useCallback((id: string) => {
+    tocLogger.info(`Scroll to heading requested: ${id}`)
+    
+    try {
+      const element = document.getElementById(id)
+      if (!element) {
+        tocLogger.warn(`Heading element not found: ${id}`)
+        return
+      }
+
+      if (isScrollingRef.current) {
+        tocLogger.debug('Interrupting previous scroll')
+      }
+
+      isScrollingRef.current = true
+
+      const elementRect = element.getBoundingClientRect()
+      const currentScrollTop = window.scrollY || document.documentElement.scrollTop
+      const targetScrollTop = currentScrollTop + elementRect.top - config.scrollOffset
+
+      tocLogger.debug(`Scrolling from ${currentScrollTop} to ${targetScrollTop}`)
+
+      window.scrollTo({
+        top: targetScrollTop,
+        behavior: 'smooth'
+      })
+
+      setTocState(prevState => ({
+        ...prevState,
+        activeId: id
+      }))
+
+      const checkScrollComplete = () => {
+        const currentScroll = window.scrollY || document.documentElement.scrollTop
+        const scrollDiff = Math.abs(currentScroll - targetScrollTop)
+        
+        if (scrollDiff < 5) {
+          isScrollingRef.current = false
+          tocLogger.debug('Scroll completed')
+          return
+        }
+
+        setTimeout(() => {
+          if (isScrollingRef.current) {
+            isScrollingRef.current = false
+            tocLogger.debug('Scroll timeout - force complete')
+          }
+        }, 2000)
+      }
+
+      setTimeout(checkScrollComplete, 100)
+
+    } catch (error) {
+      tocLogger.error('Error scrolling to heading:', error)
+      isScrollingRef.current = false
+      
+      try {
+        const element = document.getElementById(id)
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          })
+        }
+      } catch (fallbackError) {
+        tocLogger.error('Fallback scroll also failed:', fallbackError)
+      }
+    }
+  }, [config.scrollOffset])
+
+  // 컴포넌트 언마운트 시 정리
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current)
+      }
     }
   }, [])
 
   return {
-    hasTocContent,
-    activeId,
+    tocItems,
+    activeId: tocState.activeId,
+    isVisible: tocState.isVisible,
+    scrollToHeading
   }
 }

@@ -12,6 +12,7 @@ import useAllPostsQuery from "src/hooks/useAllPostsQuery"
 import { useTOC } from "src/hooks/useTOC"
 import { getSeriesData } from "src/libs/utils/series"
 import { respondMobile } from "src/styles/media"
+import { logger } from "src/libs/utils/logger"
 
 // SeriesNavigation을 dynamic import로 로드 (SSR 비활성화)
 const SeriesNavigation = dynamic(() => import("src/components/SeriesNavigation"), {
@@ -22,13 +23,17 @@ type Props = {}
 
 const PostDetail: React.FC<Props> = () => {
   const data = usePostQuery()
-  const { hasTocContent } = useTOC()
+  const { tocItems, activeId, isVisible: hasTocContent, scrollToHeading } = useTOC()
   const [isClient, setIsClient] = useState(false)
 
   // Hook은 항상 최상단에서 호출
   const allPosts = useAllPostsQuery()
 
-  console.log('PostDetail: Has TOC content:', hasTocContent)
+  logger.debug('PostDetail rendered', { 
+    hasTocContent, 
+    postId: data?.id, 
+    postTitle: data?.title 
+  })
 
   // 클라이언트에서만 시리즈 데이터 로드
   useEffect(() => {
@@ -39,12 +44,8 @@ const PostDetail: React.FC<Props> = () => {
 
   const category = (data.category && data.category?.[0]) || undefined
 
-  console.log('PostDetail: All posts data:', allPosts?.length || 0, 'posts')
-  console.log('PostDetail: Current post data:', { id: data.id, title: data.title, series: data.series })
-
   // 시리즈 데이터 가져오기 (클라이언트에서만)
   const seriesData = isClient && allPosts && allPosts.length > 0 ? getSeriesData(allPosts, data.id) : null
-  console.log('PostDetail: Series data:', seriesData)
 
   return (
     <StyledWrapper>
@@ -86,7 +87,10 @@ const PostDetail: React.FC<Props> = () => {
           <StyledInlineTOC>
             <TableOfContents
               variant="sidebar"
-              hasTocContent={hasTocContent}
+              items={tocItems}
+              activeId={activeId}
+              onItemClick={scrollToHeading}
+              isVisible={hasTocContent}
             />
           </StyledInlineTOC>
         )}
@@ -130,25 +134,7 @@ const StyledContentWrapper = styled.div`
   }
 `
 
-const StyledSidebarTOC = styled.div`
-  /* fixed positioning을 사용하므로 레이아웃에서 제외 */
-  position: absolute;
-  top: 0;
-  right: -270px;
-  width: 250px;
-  
-  /* 시리즈 네비게이션이 있을 때를 고려한 위치 조정 */
-  margin-top: 0;
 
-  /* 화면이 너무 작으면 숨김 */
-  @media (max-width: 1400px) {
-    display: none;
-  }
-
-  ${respondMobile} {
-    display: none;
-  }
-`
 
 const StyledMainContent = styled.div`
   width: 56rem; /* 이전 크기로 복구 (896px) */

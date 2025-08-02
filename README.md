@@ -28,6 +28,15 @@ Next.js static blog using Notion as a Content Management System (CMS). Supports 
 - Your profile information can be updated through Config. (`site.config.js`)
 - Plugins support includes, Google Analytics, Search Console and also Commenting using Github Issues(Utterances) or Cusdis.
 
+**📋 Table of Contents (TOC)**
+
+- Fast loading without delay timers
+- Native implementation without external dependencies
+- Responsive design that hides on mobile/tablet (≤1300px)
+- Smooth scroll navigation with active section highlighting
+- Memory efficient with caching and memoization
+- Keyboard navigation and ARIA attributes support
+
 ## Getting Started
 
 1. Star this repo.
@@ -87,6 +96,76 @@ Next.js static blog using Notion as a Content Management System (CMS). Supports 
    <img src='https://github.com/jhk0530/morethan-log/assets/6457691/3876a273-a270-47ef-a2ad-663519d9e537' width = '500'>
 
 </details>
+
+## Technical Documentation
+
+### Table of Contents (TOC) System
+
+The blog includes a Table of Contents system for navigation within blog posts.
+
+#### Architecture
+
+The TOC system consists of three main components:
+
+1. **`useTOC` Hook** (`src/hooks/useTOC.ts`)
+   - Replaces the old tocbot-based implementation
+   - Provides fast initialization without delay timers
+   - Includes responsive optimization for mobile devices
+   - Uses native browser APIs
+
+2. **TOC Utilities** (`src/libs/utils/toc.ts`)
+   - DOM traversal for heading extraction
+   - Hierarchical TOC structure building
+   - Caching for performance
+   - Safe ID generation for Korean and special characters
+
+3. **TableOfContents Component** (`src/components/TableOfContents/index.tsx`)
+   - Native React implementation
+   - Responsive design with automatic hiding on small screens
+   - Smooth scroll navigation
+   - Active section highlighting
+
+#### Key Features
+
+- Fast loading TOC
+- Memory efficient with caching
+- Responsive design (hidden on screens ≤1300px)
+- Keyboard navigation and ARIA attributes
+- IntersectionObserver for active section tracking
+
+#### Type Definitions
+
+```typescript
+// Core TOC item structure
+export type TOCItem = {
+  id: string
+  title: string
+  level: number
+  children?: TOCItem[]
+}
+
+// Version with DOM caching
+export type TOCItemWithCache = TOCItem & {
+  element?: HTMLElement  // DOM element reference
+  offsetTop?: number     // Cached scroll position
+}
+```
+
+#### Usage
+
+The TOC system is automatically integrated into blog posts. It will:
+- Show when there are 3+ headings in the content
+- Hide automatically on mobile/tablet devices
+- Provide smooth scroll navigation
+- Highlight the currently active section
+
+#### Environment-based Logging
+
+The system includes a logging utility (`src/libs/utils/logger.ts`) that:
+- Disables console output in production
+- Provides debugging information in development
+- Supports different log levels (error, warn, info, debug)
+- Can be reused across other components
 
 ## FAQ
 

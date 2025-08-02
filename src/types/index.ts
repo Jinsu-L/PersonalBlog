@@ -47,6 +47,31 @@ export type TOCItem = {
   children?: TOCItem[]
 }
 
+// TOC 아이템 타입 (DOM 캐싱 포함)
+export type TOCItemWithCache = {
+  id: string
+  title: string
+  level: number
+  children?: TOCItemWithCache[]
+  element?: HTMLElement  // DOM 요소 참조
+  offsetTop?: number     // 스크롤 위치
+}
+
+// TOC 설정 타입
+export type TOCConfig = {
+  headingSelector: string
+  minHeadings: number
+  scrollOffset: number
+  throttleDelay: number
+}
+
+// TOC 상태 타입
+export type TOCState = {
+  items: TOCItemWithCache[]
+  activeId: string | null
+  isVisible: boolean
+}
+
 export type PostDetail = TPost & {
   recordMap: ExtendedRecordMap
   headings?: TOCItem[]     // TOC 데이터

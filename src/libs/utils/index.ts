@@ -4,3 +4,7 @@ export function formatDate(date: any, local: any) {
   const res = d.toLocaleDateString(local, options)
   return res
 }
+
+// Export logger utilities
+export { Logger, LogLevel, createLogger, logger, tocLogger, perfLogger } from './logger'
+export type { LoggerConfig } from './logger'

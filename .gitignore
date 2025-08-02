@@ -40,3 +40,7 @@ yarn-error.log*
 
 # Kiro IDE files
 .kiro/
+
+# Documentation files (not for git)
+NOTION_SERIES_SETUP.md
+TOC_RESPONSIVE_TEST_SUMMARY.md
