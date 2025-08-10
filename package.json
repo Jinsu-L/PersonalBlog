@@ -10,6 +10,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:sitemap": "next-sitemap --config next-sitemap.config.js",
+    "generate:sitemap": "node scripts/generate-sitemap.js",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
